@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VOID</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=BBH+Bogle&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav>
+    <a href="#shop">shop</a>
+    <a href="#about">about</a>
+    <a href="#contact">contact</a>
+    <button id="cart-button" aria-label="Open cart">cart <span id="cart-count">0</span></button>
+  </nav>
+
+  <header>
+    <div class="header-bg">
+      <img src="assets/IMG_0633 (1).png" alt="" aria-hidden="true" class="header-image header-image-1">
+      <img src="assets/IMG_0637.PNG" alt="" aria-hidden="true" class="header-image header-image-2">
+    </div>
+    <h1>VOID</h1>
+  </header>
+
+  <section id="shop">
+    <h2>DROP001</h2>
+    <div class="products">
+      <article class="product-card">
+        <a href="product-sweater.html" class="product-link">
+          <div class="card-carousel">
+            <button class="card-carousel-btn card-carousel-prev" data-card="sweater" aria-label="Previous">‹</button>
+            <div class="card-carousel-container">
+              <div class="card-carousel-item active">
+                <img src="assets/sweater/IMG_9457.JPEG" alt="VOID Sweater">
+              </div>
+              <div class="card-carousel-item">
+                <img src="assets/sweater/IMG_9460.JPEG" alt="VOID Sweater">
+              </div>
+              <div class="card-carousel-item">
+                <img src="assets/sweater/IMG_9463.JPEG" alt="VOID Sweater">
+              </div>
+              <div class="card-carousel-item">
+                <img src="assets/sweater/IMG_9464.JPEG" alt="VOID Sweater">
+              </div>
+              <div class="card-carousel-item">
+                <video src="assets/sweater/IMG_9449.MP4" preload="metadata" loop muted playsinline></video>
+              </div>
+              <div class="card-carousel-item">
+                <video src="assets/sweater/IMG_9456.MOV" preload="metadata" loop muted playsinline></video>
+              </div>
+              <div class="card-carousel-item">
+                <video src="assets/sweater/IMG_9478.MP4" preload="metadata" loop muted playsinline></video>
+              </div>
+              <div class="card-carousel-item">
+                <video src="assets/sweater/IMG_9480.MP4" preload="metadata" loop muted playsinline></video>
+              </div>
+            </div>
+            <button class="card-carousel-btn card-carousel-next" data-card="sweater" aria-label="Next">›</button>
+          </div>
+          <h3>SWEATER</h3>
+          <div class="price">65€</div>
+        </a>
+      </article>
+
+      <article class="product-card">
+        <a href="product-triptych.html" class="product-link">
+          <div class="card-carousel">
+            <button class="card-carousel-btn card-carousel-prev" data-card="triptych" aria-label="Previous">‹</button>
+            <div class="card-carousel-container">
+              <div class="card-carousel-item active">
+                <img src="assets/triptych/IMG_9509.JPEG" alt="Triptych">
+              </div>
+              <div class="card-carousel-item">
+                <img src="assets/triptych/IMG_9515.png" alt="Triptych">
+              </div>
+              <div class="card-carousel-item">
+                <img src="assets/triptych/IMG_9516.png" alt="Triptych">
+              </div>
+              <div class="card-carousel-item">
+                <img src="assets/triptych/IMG_9517.png" alt="Triptych">
+              </div>
+            </div>
+            <button class="card-carousel-btn card-carousel-next" data-card="triptych" aria-label="Next">›</button>
+          </div>
+          <h3>triptych</h3>
+          <div class="price">50€</div>
+        </a>
+      </article>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2>about void</h2>
+  </section>
+
+  <footer id="contact">
+    <p><a href="https://instagram.com/void.vacio.nobody.nadie" target="_blank" rel="noopener noreferrer">@void.vacio.nobody.nadie</a></p>
+  </footer>
+
+  <!-- Cart overlay -->
+  <div id="cart-overlay" class="cart-overlay" hidden>
+    <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-header">
+        <h2 id="cart-title">cart</h2>
+        <button class="close-cart" aria-label="Close cart">×</button>
+      </div>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-footer">
+        <div class="cart-total">total: <span id="cart-total">0€</span></div>
+        <div class="cart-actions">
+          <a class="btn primary" href="checkout.html">buy</a>
+          <button class="btn ghost" id="cart-clear">clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cart.js"></script>
+  <script>
+    // Page transition handler
+    document.addEventListener('DOMContentLoaded', () => {
+      const links = document.querySelectorAll('a[href]:not([target="_blank"])');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+          if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+            e.preventDefault();
+            document.body.classList.add('page-transitioning');
+            setTimeout(() => {
+              window.location.href = href;
+            }, 300);
+          }
+        });
+      });
+    });
+
+    (function() {
+      const root = document.documentElement;
+      let ticking = false;
+
+      function updateBackground() {
+        ticking = false;
+        const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+        const y = window.scrollY || window.pageYOffset || 0;
+        let p = scrollable > 0 ? Math.min(Math.max(y / scrollable, 0), 1) : 0;
+        
+        // Acelerar la transición a negro
+        p = Math.min(p * 5, 1);
+        
+        // Interpolar de blanco (255,255,255) a negro (0,0,0)
+        const r = Math.round(255 * (1 - p));
+        const g = Math.round(255 * (1 - p));
+        const b = Math.round(255 * (1 - p));
+        const bgColor = `rgb(${r}, ${g}, ${b})`;
+        root.style.setProperty('--scroll-bg', bgColor);
+        
+        // Controlar opacidad de las imágenes
+        // Imagen 1 desaparece (1 -> 0)
+        // Imagen 2 aparece (0 -> 1)
+        const img1Opacity = 1 - p;
+        const img2Opacity = p;
+        root.style.setProperty('--img1-opacity', img1Opacity);
+        root.style.setProperty('--img2-opacity', img2Opacity);
+      }
+
+      function onScroll() {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(updateBackground);
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', () => updateBackground(), { passive: true });
+      window.addEventListener('load', () => updateBackground());
+
+      updateBackground();
+
+      // Carrusel de tarjeta de producto
+      document.querySelectorAll('.card-carousel-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const card = e.target.closest('.card-carousel');
+          const items = card.querySelectorAll('.card-carousel-item');
+          let currentIndex = Array.from(items).findIndex(item => item.classList.contains('active'));
+          
+          // Pausar video actual si existe
+          const currentVideo = items[currentIndex].querySelector('video');
+          if (currentVideo) {
+            currentVideo.pause();
+            currentVideo.currentTime = 0;
+          }
+          
+          if (e.target.classList.contains('card-carousel-next')) {
+            currentIndex = (currentIndex + 1) % items.length;
+          } else {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+          }
+          
+          items.forEach(item => item.classList.remove('active'));
+          items[currentIndex].classList.add('active');
+          
+          // Reproducir video nuevo si existe
+          const newVideo = items[currentIndex].querySelector('video');
+          if (newVideo) {
+            newVideo.play().catch(e => console.log('Autoplay prevented:', e));
+          }
+        });
+      });
+
+      // init carrito
+      if (window.VoidCart) {
+        window.VoidCart.init({
+          countEl: document.getElementById('cart-count'),
+          buttonEl: document.getElementById('cart-button'),
+          overlayEl: document.getElementById('cart-overlay'),
+          itemsEl: document.getElementById('cart-items'),
+          totalEl: document.getElementById('cart-total'),
+          clearEl: document.getElementById('cart-clear'),
+          closeEl: document.querySelector('.close-cart')
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>

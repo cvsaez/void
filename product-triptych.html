@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRIPTYCH·D001</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=BBH+Bogle&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html#shop">shop</a>
+    <a href="index.html#about">about</a>
+    <a href="index.html#contact">contact</a>
+    <button id="cart-button" aria-label="Open cart">cart <span id="cart-count">0</span></button>
+  </nav>
+
+  <main class="product">
+    <div class="media-carousel">
+      <button class="carousel-btn carousel-prev" aria-label="Previous">‹</button>
+      <div class="media-container">
+        <div class="media-item active">
+          <img src="assets/triptych/IMG_9509.JPEG" alt="Triptych" loading="lazy">
+        </div>
+        <div class="media-item">
+          <img src="assets/triptych/IMG_9515.png" alt="Triptych" loading="lazy">
+        </div>
+        <div class="media-item">
+          <img src="assets/triptych/IMG_9516.png" alt="Triptych" loading="lazy">
+        </div>
+        <div class="media-item">
+          <img src="assets/triptych/IMG_9517.png" alt="Triptych" loading="lazy">
+        </div>
+      </div>
+      <button class="carousel-btn carousel-next" aria-label="Next">›</button>
+    </div>
+    <aside class="product-info">
+      <h1>TRIPTYCH</h1>
+      <p class="subtitle">D001</p>
+      <div class="price">50 €</div>
+      <p class="size-info">SIZE: A2 (50 cm x 65 cm)</p>
+      <p class="desc">Brushstrokes with crap paint. Got stains from drops that escaped and scratched pencil all over, but that's just how it came out.</p>
+      <div class="actions">
+        <button class="btn primary" id="buy-now">buy now</button>
+        <button class="btn ghost" id="add-cart">add to cart</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Cart overlay -->
+  <div id="cart-overlay" class="cart-overlay" hidden>
+    <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-header">
+        <h2 id="cart-title">cart</h2>
+        <button class="close-cart" aria-label="Close cart">×</button>
+      </div>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-footer">
+        <div class="cart-total">total: <span id="cart-total">0€</span></div>
+        <div class="cart-actions">
+          <a class="btn primary" href="checkout.html">buy</a>
+          <button class="btn ghost" id="cart-clear">clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cart.js"></script>
+  <script>
+    // Page transition handler
+    document.addEventListener('DOMContentLoaded', () => {
+      const links = document.querySelectorAll('a[href]:not([target="_blank"])');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+          if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+            e.preventDefault();
+            document.body.classList.add('page-transitioning');
+            setTimeout(() => {
+              window.location.href = href;
+            }, 300);
+          }
+        });
+      });
+    });
+
+    (function(){
+      // Establecer fondo negro fijo
+      document.documentElement.style.setProperty('--scroll-bg', '#000000');
+
+      // Carrusel
+      const mediaItems = document.querySelectorAll('.media-item');
+      const prevBtn = document.querySelector('.carousel-prev');
+      const nextBtn = document.querySelector('.carousel-next');
+      let currentIndex = 0;
+
+      function showSlide(index) {
+        mediaItems.forEach(item => item.classList.remove('active'));
+        currentIndex = (index + mediaItems.length) % mediaItems.length;
+        mediaItems[currentIndex].classList.add('active');
+      }
+
+      prevBtn.addEventListener('click', () => showSlide(currentIndex - 1));
+      nextBtn.addEventListener('click', () => showSlide(currentIndex + 1));
+
+      // Teclado
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') showSlide(currentIndex - 1);
+        if (e.key === 'ArrowRight') showSlide(currentIndex + 1);
+      });
+
+      const product = { id: 'triptych·D001', title: 'triptych·D001', price: 90 };
+      if(window.VoidCart){
+        window.VoidCart.init({
+          countEl: document.getElementById('cart-count'),
+          buttonEl: document.getElementById('cart-button'),
+          overlayEl: document.getElementById('cart-overlay'),
+          itemsEl: document.getElementById('cart-items'),
+          totalEl: document.getElementById('cart-total'),
+          clearEl: document.getElementById('cart-clear'),
+          closeEl: document.querySelector('.close-cart')
+        });
+      }
+      document.getElementById('add-cart').addEventListener('click', ()=> window.VoidCart.add(product));
+      document.getElementById('buy-now').addEventListener('click', ()=>{ window.VoidCart.add(product); location.href = 'checkout.html'; });
+    })();
+  </script>
+</body>
+</html>

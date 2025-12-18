@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout · VOID</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=BBH+Bogle&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- PayPal SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AR2T8TiFF578bAa_egKWNqrzpHtnMYSzmDZbqob9RZ1uXLL2QGmNzimNlzCIaK2snCtZH-N2msAc8TGN&currency=EUR"></script>
+  
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html#shop">shop</a>
+    <a href="index.html#about">about</a>
+    <a href="index.html#contact">contact</a>
+    <button id="cart-button" aria-label="Open cart">cart <span id="cart-count">0</span></button>
+  </nav>
+
+  <main class="checkout">
+    <h1>checkout</h1>
+    <div class="checkout-content">
+      
+      <!-- Customer Information Form -->
+      <div class="checkout-section">
+        <h2 class="section-title">Shipping Information</h2>
+        <form id="shipping-form" class="shipping-form">
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required placeholder="your@email.com">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name *</label>
+              <input type="text" id="firstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name *</label>
+              <input type="text" id="lastName" name="lastName" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="address">Address *</label>
+            <input type="text" id="address" name="address" required placeholder="Street address">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">City *</label>
+              <input type="text" id="city" name="city" required>
+            </div>
+            <div class="form-group">
+              <label for="postalCode">Postal Code *</label>
+              <input type="text" id="postalCode" name="postalCode" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="country">Country *</label>
+            <select id="country" name="country" required>
+              <option value="">Select country</option>
+              <option value="ES">Spain</option>
+              <option value="PT">Portugal</option>
+              <option value="FR">France</option>
+              <option value="IT">Italy</option>
+              <option value="DE">Germany</option>
+              <option value="UK">United Kingdom</option>
+              <option value="OTHER-EU">Other EU</option>
+              <option value="INTERNATIONAL">International (Non-EU)</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="shippingMethod">Shipping Method *</label>
+            <select id="shippingMethod" name="shippingMethod" required>
+              <option value="">Select shipping method</option>
+              <option value="standard" data-cost-es="5" data-cost-eu="12" data-cost-int="25">Standard (5-7 days)</option>
+              <option value="express" data-cost-es="10" data-cost-eu="20" data-cost-int="40">Express (2-3 days)</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="checkout-section">
+        <h2 class="section-title">Order Summary</h2>
+        <div class="summary" id="summary"></div>
+        <div class="shipping-cost">
+          <span>Shipping:</span>
+          <span id="shipping-amount">€0.00</span>
+        </div>
+        <div class="order-total">
+          <span>Total:</span>
+          <span id="order-total">€0.00</span>
+        </div>
+      </div>
+
+      <div class="checkout-actions">
+        <div id="paypal-button-container" style="display: none;"></div>
+        <button class="btn ghost" id="empty">empty cart</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Cart overlay -->
+  <div id="cart-overlay" class="cart-overlay" hidden>
+    <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-header">
+        <h2 id="cart-title">cart</h2>
+        <button class="close-cart" aria-label="Close cart">×</button>
+      </div>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-footer">
+        <div class="cart-total">total: <span id="cart-total">€0</span></div>
+        <div class="cart-actions">
+          <a class="btn primary" href="checkout.html">buy</a>
+          <button class="btn ghost" id="cart-clear">clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cart.js"></script>
+  <script>
+    // Page transition handler
+    document.addEventListener('DOMContentLoaded', () => {
+      const links = document.querySelectorAll('a[href]:not([target="_blank"])');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+          if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+            e.preventDefault();
+            document.body.classList.add('page-transitioning');
+            setTimeout(() => {
+              window.location.href = href;
+            }, 300);
+          }
+        });
+      });
+    });
+
+    (function(){
+      // Establecer fondo negro fijo
+      document.documentElement.style.setProperty('--scroll-bg', '#000000');
+
+      if(window.VoidCart){
+        window.VoidCart.init({
+          countEl: document.getElementById('cart-count'),
+          buttonEl: document.getElementById('cart-button'),
+          overlayEl: document.getElementById('cart-overlay'),
+          itemsEl: document.getElementById('cart-items'),
+          totalEl: document.getElementById('cart-total'),
+          clearEl: document.getElementById('cart-clear'),
+          closeEl: document.querySelector('.close-cart')
+        });
+      }
+      function renderSummary(){
+        const el = document.getElementById('summary');
+        const items = window.VoidCart.get();
+        if(items.length===0){ el.innerHTML = '<div class="empty">No items in cart.</div>'; return; }
+        const total = window.VoidCart.total();
+        const fmt = (n)=>`€${n.toFixed(2)}`;
+        el.innerHTML = `
+          <div class="summary-list">
+            ${items.map(i=>`
+              <div class="s-row">
+                <div class="s-item-info">
+                  <div class="s-item-title">${i.title}</div>
+                  <div class="s-item-price">${fmt(i.price)} each</div>
+                </div>
+                <div class="s-item-controls">
+                  <button class="s-qty-btn s-minus" data-id="${i.id}">−</button>
+                  <span class="s-qty">${i.qty||1}</span>
+                  <button class="s-qty-btn s-plus" data-id="${i.id}">+</button>
+                  <button class="s-remove" data-id="${i.id}">×</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="s-total">total: ${fmt(total)}</div>
+        `;
+        
+        // Bind event listeners
+        el.querySelectorAll('.s-remove').forEach(btn=>{
+          btn.addEventListener('click', ()=> { window.VoidCart.remove(btn.getAttribute('data-id')); renderSummary(); });
+        });
+        el.querySelectorAll('.s-minus').forEach(btn=>{
+          btn.addEventListener('click', ()=> { window.VoidCart.updateQty(btn.getAttribute('data-id'), -1); renderSummary(); });
+        });
+        el.querySelectorAll('.s-plus').forEach(btn=>{
+          btn.addEventListener('click', ()=> { window.VoidCart.updateQty(btn.getAttribute('data-id'), 1); renderSummary(); });
+        });
+      }
+      renderSummary();
+      
+      // EmailJS Initialization
+      emailjs.init('1TK1uU7YOrggD-6_5');
+      
+      // Shipping calculation
+      let shippingCost = 0;
+      
+      function calculateShipping() {
+        const country = document.getElementById('country').value;
+        const method = document.getElementById('shippingMethod');
+        const selectedOption = method.options[method.selectedIndex];
+        
+        if (!country || !selectedOption.value) {
+          shippingCost = 0;
+        } else {
+          if (country === 'ES') {
+            shippingCost = parseFloat(selectedOption.dataset.costEs || 0);
+          } else if (['PT', 'FR', 'IT', 'DE', 'UK', 'OTHER-EU'].includes(country)) {
+            shippingCost = parseFloat(selectedOption.dataset.costEu || 0);
+          } else {
+            shippingCost = parseFloat(selectedOption.dataset.costInt || 0);
+          }
+        }
+        
+        document.getElementById('shipping-amount').textContent = `€${shippingCost.toFixed(2)}`;
+        updateTotal();
+      }
+      
+      function updateTotal() {
+        const subtotal = window.VoidCart.total();
+        const total = subtotal + shippingCost;
+        document.getElementById('order-total').textContent = `€${total.toFixed(2)}`;
+      }
+      
+      function validateForm() {
+        const form = document.getElementById('shipping-form');
+        return form.checkValidity();
+      }
+      
+      // Show PayPal button when form is complete
+      function checkFormCompletion() {
+        if (validateForm() && shippingCost > 0) {
+          document.getElementById('paypal-button-container').style.display = 'block';
+        } else {
+          document.getElementById('paypal-button-container').style.display = 'none';
+        }
+      }
+      
+      // Form event listeners
+      document.getElementById('country').addEventListener('change', () => {
+        calculateShipping();
+        checkFormCompletion();
+      });
+      
+      document.getElementById('shippingMethod').addEventListener('change', () => {
+        calculateShipping();
+        checkFormCompletion();
+      });
+      
+      document.getElementById('shipping-form').addEventListener('input', checkFormCompletion);
+      
+      updateTotal();
+      
+      // PayPal Integration with shipping
+      if (window.paypal) {
+        paypal.Buttons({
+          createOrder: function(data, actions) {
+            const items = window.VoidCart.get();
+            if (items.length === 0) {
+              alert('Your cart is empty!');
+              return;
+            }
+            
+            if (!validateForm()) {
+              alert('Please fill in all shipping information.');
+              return;
+            }
+            
+            const subtotal = window.VoidCart.total();
+            const total = subtotal + shippingCost;
+            
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  currency_code: 'EUR',
+                  value: total.toFixed(2),
+                  breakdown: {
+                    item_total: {
+                      currency_code: 'EUR',
+                      value: subtotal.toFixed(2)
+                    },
+                    shipping: {
+                      currency_code: 'EUR',
+                      value: shippingCost.toFixed(2)
+                    }
+                  }
+                },
+                items: items.map(item => ({
+                  name: item.title,
+                  unit_amount: {
+                    currency_code: 'EUR',
+                    value: item.price.toFixed(2)
+                  },
+                  quantity: item.qty || 1
+                }))
+              }]
+            });
+          },
+          onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+              // Send confirmation email
+              sendOrderConfirmation(details);
+              
+              alert('Transaction completed! Check your email for confirmation.');
+              window.VoidCart.clear();
+              renderSummary();
+            });
+          },
+          onError: function(err) {
+            console.error('PayPal error:', err);
+            alert('Payment error. Please try again.');
+          }
+        }).render('#paypal-button-container');
+      }
+      
+      // Send order confirmation email
+      function sendOrderConfirmation(paypalDetails) {
+        const form = document.getElementById('shipping-form');
+        const formData = new FormData(form);
+        const items = window.VoidCart.get();
+        
+        // Format items for the email template
+        const orders = items.map(item => ({
+          name: item.title,
+          units: item.qty || 1,
+          price: (item.price * (item.qty || 1)).toFixed(2),
+          image_url: item.image || 'https://via.placeholder.com/64'
+        }));
+        
+        const subtotal = window.VoidCart.total();
+        const total = subtotal + shippingCost;
+        
+        const orderDetails = {
+          order_id: paypalDetails.id,
+          email: formData.get('email'),
+          orders: orders,
+          cost: {
+            shipping: shippingCost.toFixed(2),
+            tax: '0.00',
+            total: total.toFixed(2)
+          }
+        };
+        
+        // Send email using EmailJS
+        emailjs.send('service_n3gyhjn', 'template_qhcv1xn', orderDetails)
+          .then(function(response) {
+            console.log('Email sent successfully:', response);
+          }, function(error) {
+            console.error('Email error:', error);
+          });
+      }
+      
+      document.getElementById('empty').addEventListener('click', ()=>{ window.VoidCart.clear(); renderSummary(); updateTotal(); });
+    })();
+  </script>
+</body>
+</html>

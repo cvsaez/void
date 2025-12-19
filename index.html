@@ -216,10 +216,11 @@
         const prevBtn = carousel.querySelector('.card-carousel-prev');
         const nextBtn = carousel.querySelector('.card-carousel-next');
         let currentIndex = 0;
-        let isDragging = false;
         let startX = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
+        let animationID = 0;
+        let isDragging = false;
 
         // Crear indicadores
         items.forEach((_, index) => {
@@ -230,30 +231,37 @@
             e.preventDefault();
             e.stopPropagation();
             currentIndex = index;
-            updateCarousel();
+            setPositionByIndex();
           });
           indicatorsContainer.appendChild(dot);
         });
 
         const dots = carousel.querySelectorAll('.carousel-dot');
 
-        function setTransform(translate) {
-          container.style.transition = 'none';
-          container.style.transform = `translateX(${translate}px)`;
-        }
-
-        function updateCarousel(animated = true) {
-          container.style.transition = animated ? 'transform 0.3s ease' : 'none';
-          currentTranslate = -currentIndex * container.offsetWidth;
-          prevTranslate = currentTranslate;
-          container.style.transform = `translateX(${currentTranslate}px)`;
-          
-          // Actualizar indicadores
+        function updateDots() {
           dots.forEach((dot, index) => {
             dot.classList.toggle('active', index === currentIndex);
           });
-          
-          // Pausar todos los videos
+        }
+
+        function getPositionX(element) {
+          return currentTranslate;
+        }
+
+        function setSliderPosition() {
+          container.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
+        }
+
+        function setPositionByIndex() {
+          currentTranslate = currentIndex * -container.offsetWidth;
+          prevTranslate = currentTranslate;
+          container.style.transition = 'transform 0.3s ease';
+          setSliderPosition();
+          updateDots();
+          updateVideos();
+        }
+
+        function updateVideos() {
           items.forEach((item, idx) => {
             const video = item.querySelector('video');
             if (video && idx !== currentIndex) {
@@ -262,49 +270,30 @@
             }
           });
 
-          // Reproducir video activo si existe
           const activeVideo = items[currentIndex].querySelector('video');
           if (activeVideo) {
             activeVideo.play().catch(e => console.log('Autoplay prevented:', e));
           }
         }
 
-        // Flechas
-        prevBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          currentIndex = (currentIndex - 1 + items.length) % items.length;
-          updateCarousel();
-        });
+        function touchStart(index) {
+          return function (event) {
+            isDragging = true;
+            startX = event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+            container.style.transition = 'none';
+          }
+        }
 
-        nextBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          currentIndex = (currentIndex + 1) % items.length;
-          updateCarousel();
-        });
+        function touchMove(event) {
+          if (isDragging) {
+            const currentPosition = event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+            currentTranslate = prevTranslate + currentPosition - startX;
+            setSliderPosition();
+          }
+        }
 
-        // Drag interactivo
-        container.addEventListener('touchstart', (e) => {
-          isDragging = true;
-          startX = e.touches[0].clientX;
-          container.style.cursor = 'grabbing';
-        }, { passive: true });
-
-        container.addEventListener('touchmove', (e) => {
-          if (!isDragging) return;
-          e.preventDefault();
-          const currentX = e.touches[0].clientX;
-          const diff = currentX - startX;
-          currentTranslate = prevTranslate + diff;
-          setTransform(currentTranslate);
-        }, { passive: false });
-
-        const handleTouchEnd = () => {
-          if (!isDragging) return;
+        function touchEnd() {
           isDragging = false;
-          container.style.cursor = 'grab';
-          
           const movedBy = currentTranslate - prevTranslate;
           const threshold = container.offsetWidth / 4;
 
@@ -314,13 +303,46 @@
             currentIndex = (currentIndex - 1 + items.length) % items.length;
           }
 
-          updateCarousel();
-        };
+          setPositionByIndex();
+        }
 
-        container.addEventListener('touchend', handleTouchEnd, { passive: true });
-        container.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+        // Flechas
+        if (prevBtn) {
+          prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            setPositionByIndex();
+          });
+        }
 
-        updateCarousel(false);
+        if (nextBtn) {
+          nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            currentIndex = (currentIndex + 1) % items.length;
+            setPositionByIndex();
+          });
+        }
+
+        // Touch events
+        container.addEventListener('touchstart', touchStart(0));
+        container.addEventListener('touchmove', touchMove);
+        container.addEventListener('touchend', touchEnd);
+        container.addEventListener('touchcancel', touchEnd);
+
+        // Mouse events para desktop
+        container.addEventListener('mousedown', touchStart(0));
+        container.addEventListener('mousemove', touchMove);
+        container.addEventListener('mouseup', touchEnd);
+        container.addEventListener('mouseleave', () => {
+          if (isDragging) touchEnd();
+        });
+
+        // Prevenir drag de imágenes
+        container.addEventListener('dragstart', (e) => e.preventDefault());
+
+        setPositionByIndex();
       });
 
       // Botones de compra

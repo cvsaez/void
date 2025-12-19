@@ -241,6 +241,7 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   background: #141414;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .card-carousel-container {
@@ -249,12 +250,7 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   height: 100%;
   display: flex;
   transition: transform 0.3s ease;
-  touch-action: pan-x;
-  cursor: grab;
-}
-
-.card-carousel-container:active {
-  cursor: grabbing;
+  will-change: transform;
 }
 
 .card-carousel-item {
@@ -263,9 +259,9 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   width: 100%;
   height: 100%;
   flex-shrink: 0;
-  opacity: 1;
-  transition: none;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-carousel-item.active {
@@ -274,18 +270,14 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 
 .card-carousel-item img,
 .card-carousel-item video {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
-  touch-action: none;
+  display: block;
   pointer-events: none;
   -webkit-user-drag: none;
-  user-drag: none;
-  display: block;
+  -webkit-touch-callout: none;
 }
 
 .card-carousel-btn {

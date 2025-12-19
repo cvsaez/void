@@ -1,13 +1,13 @@
 :root {
   --black: #000;
   --white: #fff;
-  --bg: #ffffff;
+  --bg: #000000;
 
   /* Offset vertical de la imagen del header */
   --header-img-offset-y: 24px;
   
   /* Color de fondo dinámico controlado por JavaScript */
-  --scroll-bg: #ffffff;
+  --scroll-bg: #000000;
   
   /* Opacidad de las imágenes del header */
   --img1-opacity: 1;
@@ -22,6 +22,9 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
+  background-color: #000;
 }
 
 body {
@@ -29,10 +32,12 @@ body {
   background: var(--scroll-bg);
   color: var(--white);
   overflow-x: hidden;
+  max-width: 100vw;
   position: relative;
   transition: background-color 0.1s ease-out;
   animation: fadeIn 0.4s ease-in;
   opacity: 1;
+  padding-top: 60px;
 }
 
 @keyframes fadeIn {
@@ -56,35 +61,42 @@ header, section, footer {
 }
 
 header {
-  min-height: 100vh;
+  min-height: auto;
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .header-bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
+  position: relative;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
 .header-image {
-  max-width: 60vw;
-  width: auto;
+  width: 100%;
   height: auto;
-  object-fit: contain;
-  transform: translateY(var(--header-img-offset-y, 0px));
-  position: absolute;
+  display: block;
   transition: opacity 0.1s ease-out;
 }
 
 .header-image-1 {
   opacity: var(--img1-opacity);
+  position: relative;
+}
+
+.header-image-2 {
+  opacity: var(--img2-opacity);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
 }
 
 .header-image-2 {
@@ -94,6 +106,8 @@ header {
 h1 {
   font-size: clamp(4rem, 12vw, 10rem);
   color: #fff;
+  position: absolute;
+  z-index: 2;
 }
 
 h1.subtitle-white {
@@ -102,6 +116,11 @@ h1.subtitle-white {
 
 section {
   padding: 100px 10vw;
+}
+
+#shop {
+  padding-top: 0;
+  margin-top: 0;
 }
 
 section h2 + * {
@@ -114,15 +133,42 @@ footer {
   border-top: 2px solid currentColor;
 }
 
+.contact-icons {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
+.contact-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.contact-icons a:hover {
+  opacity: 0.7;
+}
+
+.contact-icon {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+}
+
 .tagline {
   color: #000;
 }
 
 /* NAV */
 nav {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 2;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   gap: 20px;
   align-items: center;
@@ -144,12 +190,47 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 }
 .product-card { border: 1px solid #fff; transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1); }
-.product-card .product-link { display: block; color: inherit; text-decoration: none; padding: 16px; }
-.product-card .product-link:has(.card-carousel) { padding: 0; }
-.product-card .product-link:has(.card-carousel) h3,
-.product-card .product-link:has(.card-carousel) .price { padding: 0 16px; }
-.product-card .product-link:has(.card-carousel) .price { padding-bottom: 16px; }
 .product-card .thumb { height: 220px; background: #2a2a2a; border: 1px dashed #666; }
+
+/* Detalles de producto en tarjeta */
+.product-details {
+  padding: 16px;
+}
+
+.product-details h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.2rem;
+}
+
+.product-subtitle {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'BBH Bogle', sans-serif;
+}
+
+.product-details .price {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  font-family: 'BBH Bogle', sans-serif;
+}
+
+.size-info {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.product-actions {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.product-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
 
 /* Carrusel en tarjetas de producto */
 .card-carousel {
@@ -164,13 +245,15 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  transition: transform 0.3s ease;
 }
 
 .card-carousel-item {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  min-width: 100%;
+  flex-shrink: 0;
+  opacity: 1;
+  transition: none;
 }
 
 .card-carousel-item.active {
@@ -195,7 +278,7 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   font-family: 'BBH Bogle', sans-serif;
   width: 32px;
   height: 32px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -205,8 +288,15 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   opacity: 0;
 }
 
-.card-carousel:hover .card-carousel-btn {
-  opacity: 1;
+/* Mostrar flechas solo en dispositivos con puntero preciso (desktop) */
+@media (hover: hover) and (pointer: fine) {
+  .card-carousel-btn {
+    display: flex;
+  }
+
+  .card-carousel:hover .card-carousel-btn {
+    opacity: 1;
+  }
 }
 
 .card-carousel-btn:hover {
@@ -220,8 +310,6 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 .card-carousel-next {
   right: 8px;
 }
-.product-card h3 { margin-top: 12px; font-size: 1.2rem; }
-.product-card .price { margin-top: 6px; font-size: 1.2rem; font-family: 'BBH Bogle', sans-serif; }
 
 /* PRODUCT PAGE */
 .product { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; padding: 60px 10vw; }
@@ -239,13 +327,14 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   aspect-ratio: 1;
   background: #141414;
   border: 1px solid #fff;
+  overflow: hidden;
+  display: flex;
+  transition: transform 0.3s ease;
 }
 
 .media-item {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  min-width: 100%;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -273,7 +362,7 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   font-family: 'BBH Bogle', sans-serif;
   width: 48px;
   height: 48px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -794,4 +883,47 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   .checkout h1 {
     font-size: 1.6rem;
   }
+}
+
+/* Indicadores de carrusel */
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(1.2);
+}
+
+.carousel-dot.active {
+  background: rgba(255, 255, 255, 1);
+  width: 10px;
+  height: 10px;
+}
+
+.card-carousel {
+  position: relative;
+}
+
+.media-carousel {
+  position: relative;
 }

@@ -304,10 +304,10 @@
           const movedBy = currentTranslate - prevTranslate;
           const threshold = container.offsetWidth / 4;
 
-          if (movedBy < -threshold && currentIndex < items.length - 1) {
-            currentIndex++;
-          } else if (movedBy > threshold && currentIndex > 0) {
-            currentIndex--;
+          if (movedBy < -threshold) {
+            currentIndex = (currentIndex + 1) % items.length;
+          } else if (movedBy > threshold) {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
           }
 
           updateCarousel();

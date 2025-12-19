@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>VOID</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -288,17 +288,18 @@
         container.addEventListener('touchstart', (e) => {
           isDragging = true;
           startX = e.touches[0].clientX;
-        });
+        }, { passive: true });
 
         container.addEventListener('touchmove', (e) => {
           if (!isDragging) return;
+          e.preventDefault();
           const currentX = e.touches[0].clientX;
           const diff = currentX - startX;
           currentTranslate = prevTranslate + diff;
           setTransform(currentTranslate);
-        });
+        }, { passive: false });
 
-        container.addEventListener('touchend', () => {
+        container.addEventListener('touchend', (e) => {
           isDragging = false;
           const movedBy = currentTranslate - prevTranslate;
           const threshold = container.offsetWidth / 4;
@@ -310,7 +311,7 @@
           }
 
           updateCarousel();
-        });
+        }, { passive: true });
 
         updateCarousel(false);
       });

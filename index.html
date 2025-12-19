@@ -300,7 +300,7 @@
           setTransform(currentTranslate);
         }, { passive: false });
 
-        container.addEventListener('touchend', (e) => {
+        const handleTouchEnd = () => {
           if (!isDragging) return;
           isDragging = false;
           container.style.cursor = 'grab';
@@ -315,7 +315,10 @@
           }
 
           updateCarousel();
-        }, { passive: true });
+        };
+
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+        container.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
         updateCarousel(false);
       });

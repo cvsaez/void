@@ -288,6 +288,7 @@
         container.addEventListener('touchstart', (e) => {
           isDragging = true;
           startX = e.touches[0].clientX;
+          container.style.cursor = 'grabbing';
         }, { passive: true });
 
         container.addEventListener('touchmove', (e) => {
@@ -300,7 +301,10 @@
         }, { passive: false });
 
         container.addEventListener('touchend', (e) => {
+          if (!isDragging) return;
           isDragging = false;
+          container.style.cursor = 'grab';
+          
           const movedBy = currentTranslate - prevTranslate;
           const threshold = container.offsetWidth / 4;
 

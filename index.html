@@ -215,11 +215,10 @@
         const indicatorsContainer = carousel.querySelector('.carousel-indicators');
         const prevBtn = carousel.querySelector('.card-carousel-prev');
         const nextBtn = carousel.querySelector('.card-carousel-next');
+        
         let currentIndex = 0;
-        let startX = 0;
-        let currentTranslate = 0;
-        let prevTranslate = 0;
-        let animationID = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
         let isDragging = false;
 
         // Crear indicadores
@@ -230,89 +229,53 @@
           dot.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            currentIndex = index;
-            setPositionByIndex();
+            goToSlide(index);
           });
           indicatorsContainer.appendChild(dot);
         });
 
         const dots = carousel.querySelectorAll('.carousel-dot');
 
-        function updateDots() {
-          dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentIndex);
+        function goToSlide(index) {
+          currentIndex = index;
+          const offset = -currentIndex * 100;
+          container.style.transform = `translateX(${offset}%)`;
+          
+          // Actualizar indicadores
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentIndex);
           });
-        }
-
-        function getPositionX(element) {
-          return currentTranslate;
-        }
-
-        function setSliderPosition() {
-          container.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
-        }
-
-        function setPositionByIndex() {
-          currentTranslate = currentIndex * -container.offsetWidth;
-          prevTranslate = currentTranslate;
-          container.style.transition = 'transform 0.3s ease';
-          setSliderPosition();
-          updateDots();
-          updateVideos();
-        }
-
-        function updateVideos() {
+          
+          // Manejar videos
           items.forEach((item, idx) => {
             const video = item.querySelector('video');
-            if (video && idx !== currentIndex) {
-              video.pause();
-              video.currentTime = 0;
+            if (video) {
+              if (idx === currentIndex) {
+                video.play().catch(() => {});
+              } else {
+                video.pause();
+                video.currentTime = 0;
+              }
             }
           });
-
-          const activeVideo = items[currentIndex].querySelector('video');
-          if (activeVideo) {
-            activeVideo.play().catch(e => console.log('Autoplay prevented:', e));
-          }
         }
 
-        function touchStart(index) {
-          return function (event) {
-            isDragging = true;
-            startX = event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
-            container.style.transition = 'none';
-          }
+        function nextSlide() {
+          currentIndex = (currentIndex + 1) % items.length;
+          goToSlide(currentIndex);
         }
 
-        function touchMove(event) {
-          if (isDragging) {
-            const currentPosition = event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
-            currentTranslate = prevTranslate + currentPosition - startX;
-            setSliderPosition();
-          }
+        function prevSlide() {
+          currentIndex = (currentIndex - 1 + items.length) % items.length;
+          goToSlide(currentIndex);
         }
 
-        function touchEnd() {
-          isDragging = false;
-          const movedBy = currentTranslate - prevTranslate;
-          const threshold = container.offsetWidth / 4;
-
-          if (movedBy < -threshold) {
-            currentIndex = (currentIndex + 1) % items.length;
-          } else if (movedBy > threshold) {
-            currentIndex = (currentIndex - 1 + items.length) % items.length;
-          }
-
-          setPositionByIndex();
-        }
-
-        // Flechas
+        // Flechas de navegación
         if (prevBtn) {
           prevBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            currentIndex = (currentIndex - 1 + items.length) % items.length;
-            setPositionByIndex();
+            prevSlide();
           });
         }
 
@@ -320,29 +283,44 @@
           nextBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            currentIndex = (currentIndex + 1) % items.length;
-            setPositionByIndex();
+            nextSlide();
           });
         }
 
-        // Touch events
-        container.addEventListener('touchstart', touchStart(0));
-        container.addEventListener('touchmove', touchMove);
-        container.addEventListener('touchend', touchEnd);
-        container.addEventListener('touchcancel', touchEnd);
+        // Touch events - enfoque simple y directo
+        carousel.addEventListener('touchstart', (e) => {
+          touchStartX = e.touches[0].clientX;
+          isDragging = true;
+        }, { passive: true });
 
-        // Mouse events para desktop
-        container.addEventListener('mousedown', touchStart(0));
-        container.addEventListener('mousemove', touchMove);
-        container.addEventListener('mouseup', touchEnd);
-        container.addEventListener('mouseleave', () => {
-          if (isDragging) touchEnd();
-        });
+        carousel.addEventListener('touchmove', (e) => {
+          if (!isDragging) return;
+          touchEndX = e.touches[0].clientX;
+        }, { passive: true });
 
-        // Prevenir drag de imágenes
-        container.addEventListener('dragstart', (e) => e.preventDefault());
+        carousel.addEventListener('touchend', () => {
+          if (!isDragging) return;
+          isDragging = false;
+          
+          const diff = touchStartX - touchEndX;
+          const threshold = 50; // píxeles mínimos para considerar un swipe
+          
+          if (Math.abs(diff) > threshold) {
+            if (diff > 0) {
+              // Swipe izquierda - siguiente
+              nextSlide();
+            } else {
+              // Swipe derecha - anterior
+              prevSlide();
+            }
+          }
+          
+          touchStartX = 0;
+          touchEndX = 0;
+        }, { passive: true });
 
-        setPositionByIndex();
+        // Inicializar
+        goToSlide(0);
       });
 
       // Botones de compra

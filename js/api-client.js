@@ -9,8 +9,7 @@ const API_BASE_URL = (() => {
   }
   
   // Si estás en producción (GitHub Pages u otro), usa el servidor de Render
-  // NOTA: Reemplaza esta URL después de desplegar en Render
-  return 'https://void-backend.onrender.com/api';
+  return 'https://void-backend-ub5t.onrender.com/api';
 })();
 
 console.log('API URL:', API_BASE_URL);

@@ -114,14 +114,18 @@
     async add(item){
       const canAdd = await this.canAddToCart(item.id);
       if(!canAdd){
-        alert('This product is sold out or you already have all available units in your cart.');
+        alert('This product is sold out or already in your cart.');
         return false;
       }
       
       const items = this.get();
       const existing = items.find(i=>i.id===item.id);
-      if(existing){ existing.qty = (existing.qty||1)+ (item.qty||1); }
-      else { items.push({...item, qty: item.qty||1}); }
+      // Si ya existe, no añadir (solo 1 unidad por producto)
+      if(existing){
+        alert('This product is already in your cart.');
+        return false;
+      }
+      items.push({...item, qty: 1});
       this.set(items); 
       this.renderOverlay();
       return true;
@@ -131,27 +135,6 @@
       const items = this.get().filter(i=>i.id!==id); 
       this.set(items); 
       this.renderOverlay(); 
-    },
-
-    async updateQty(id, delta){
-      const items = this.get();
-      const item = items.find(i=>i.id===id);
-      if(!item) return;
-      
-      const newQty = (item.qty||1) + delta;
-      if (newQty < 1) return;
-      
-      const availability = await window.VoidAPI.checkAvailability(id);
-      const maxQty = availability.quantity || 0;
-      
-      if(newQty > maxQty){
-        alert('No more units available for this product.');
-        return;
-      }
-      
-      item.qty = newQty;
-      this.set(items); 
-      this.renderOverlay();
     },
 
     clear(){ 
@@ -200,24 +183,15 @@
           <div class="cart-item">
             <div class="ci-main">
               <div class="ci-title">${i.title}</div>
-              <div class="ci-meta">${fmt(i.price)} each</div>
+              <div class="ci-meta">${fmt(i.price)}</div>
             </div>
             <div class="ci-controls">
-              <button class="ci-qty-btn ci-minus" data-id="${i.id}">−</button>
-              <span class="ci-qty">${i.qty||1}</span>
-              <button class="ci-qty-btn ci-plus" data-id="${i.id}">+</button>
               <button class="ci-remove" data-id="${i.id}">×</button>
             </div>
           </div>
         `).join('');
         itemsEl.querySelectorAll('.ci-remove').forEach(btn=>{
           btn.addEventListener('click', ()=> this.remove(btn.getAttribute('data-id')));
-        });
-        itemsEl.querySelectorAll('.ci-minus').forEach(btn=>{
-          btn.addEventListener('click', ()=> this.updateQty(btn.getAttribute('data-id'), -1));
-        });
-        itemsEl.querySelectorAll('.ci-plus').forEach(btn=>{
-          btn.addEventListener('click', ()=> this.updateQty(btn.getAttribute('data-id'), 1));
         });
       }
       totalEl.textContent = fmt(this.total());

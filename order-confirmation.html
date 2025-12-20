@@ -9,6 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=BBH+Bogle&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <style>
+    /* Fuente de ticket térmica */
+    @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400,700&display=swap');
+    
+    body {
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+    
     .confirmation-page {
       min-height: 100vh;
       display: flex;
@@ -45,10 +53,13 @@
     }
     
     .confirmation-container h1 {
-      font-family: 'BBH Bartle', sans-serif;
+      font-family: 'Courier Prime', 'Courier New', monospace;
       font-size: 2.5rem;
       text-align: center;
       margin-bottom: 15px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 3px;
     }
     
     .subtitle {
@@ -56,6 +67,8 @@
       color: #999;
       margin-bottom: 40px;
       font-size: 1.1rem;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      text-transform: uppercase;
     }
     
     .order-details {
@@ -69,12 +82,14 @@
       display: flex;
       justify-content: space-between;
       margin-bottom: 15px;
-      font-family: 'BBH Bogle', sans-serif;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      font-size: 0.95rem;
     }
     
     .detail-label {
       color: #999;
       font-size: 0.95rem;
+      text-transform: uppercase;
     }
     
     .detail-value {
@@ -83,10 +98,11 @@
     }
     
     .order-id {
-      font-family: monospace;
+      font-family: 'Courier Prime', 'Courier New', monospace;
       background: #111;
       padding: 3px 8px;
       border: 1px solid #333;
+      font-size: 0.85rem;
     }
     
     .products-section {
@@ -94,9 +110,12 @@
     }
     
     .products-section h2 {
-      font-family: 'BBH Bartle', sans-serif;
+      font-family: 'Courier Prime', 'Courier New', monospace;
       font-size: 1.5rem;
       margin-bottom: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
     
     .product-item {
@@ -115,16 +134,20 @@
     .product-name {
       font-weight: bold;
       margin-bottom: 5px;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      text-transform: uppercase;
     }
     
     .product-meta {
       color: #999;
       font-size: 0.9rem;
+      font-family: 'Courier Prime', 'Courier New', monospace;
     }
     
     .product-price {
       font-weight: bold;
       font-size: 1.1rem;
+      font-family: 'Courier Prime', 'Courier New', monospace;
     }
     
     .shipping-info {
@@ -135,13 +158,17 @@
     }
     
     .shipping-info h3 {
-      font-family: 'BBH Bartle', sans-serif;
+      font-family: 'Courier Prime', 'Courier New', monospace;
       margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: bold;
     }
     
     .shipping-address {
       color: #ccc;
       line-height: 1.6;
+      font-family: 'Courier Prime', 'Courier New', monospace;
     }
     
     .total-section {
@@ -156,6 +183,8 @@
       justify-content: space-between;
       margin-bottom: 10px;
       font-size: 1.1rem;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      text-transform: uppercase;
     }
     
     .total-row.grand-total {
@@ -164,6 +193,7 @@
       margin-top: 15px;
       font-size: 1.5rem;
       font-weight: bold;
+      letter-spacing: 2px;
     }
     
     .info-box {
@@ -177,16 +207,23 @@
       color: #ccc;
       line-height: 1.6;
       margin-bottom: 10px;
+      font-family: 'Courier Prime', 'Courier New', monospace;
     }
     
     .info-box strong {
       color: #fff;
+      font-weight: bold;
     }
     
     .actions {
       display: flex;
       gap: 15px;
       justify-content: center;
+    }
+    
+    /* Los botones mantienen su fuente original */
+    .btn {
+      font-family: 'BBH Bogle', sans-serif !important;
     }
     
     @media (max-width: 640px) {

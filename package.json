@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "VOID e-commerce with real-time inventory management",
   "main": "server/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",

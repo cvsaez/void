@@ -1,7 +1,19 @@
 // API Configuration
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000/api'
-  : '/api'; // Para producción
+// Detecta automáticamente si está en desarrollo o producción
+const API_BASE_URL = (() => {
+  const hostname = window.location.hostname;
+  
+  // Si estás en localhost, usa el servidor local
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3000/api';
+  }
+  
+  // Si estás en producción (GitHub Pages u otro), usa el servidor de Render
+  // NOTA: Reemplaza esta URL después de desplegar en Render
+  return 'https://void-backend.onrender.com/api';
+})();
+
+console.log('API URL:', API_BASE_URL);
 
 // API Client
 const api = {

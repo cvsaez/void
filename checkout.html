@@ -11,8 +11,11 @@
 
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- PayPal SDK -->
-  <script src="https://www.paypal.com/sdk/js?client-id=AR2T8TiFF578bAa_egKWNqrzpHtnMYSzmDZbqob9RZ1uXLL2QGmNzimNlzCIaK2snCtZH-N2msAc8TGN&currency=EUR"></script>
+  <!-- API Client -->
+  <script src="js/api-client.js"></script>
+  
+  <!-- PayPal SDK - Sandbox Mode -->
+  <script src="https://www.paypal.com/sdk/js?client-id=ASJej3WWGmLo38oP_ehGplX6g5xkUnIcYyafvsDBsbdl6CbplshO_FWTd_Xt6cGTjOLm5sfMenSV3s5o&currency=EUR"></script>
   
   <!-- EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -310,15 +313,67 @@
               }]
             });
           },
-          onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-              // Send confirmation email
-              sendOrderConfirmation(details);
+          onApprove: async function(data, actions) {
+            try {
+              const orderDetails = await actions.order.capture();
               
-              alert('Transaction completed! Check your email for confirmation.');
+              // Marcar productos como vendidos usando la API
+              const items = window.VoidCart.get();
+              const results = [];
+              
+              for (const item of items) {
+                const result = await window.VoidAPI.purchaseProduct(item.id);
+                results.push({ product: item.id, result });
+                
+                if (!result.success) {
+                  console.warn(`Failed to mark ${item.id} as sold:`, result.error);
+                }
+              }
+              
+              console.log('Purchase results:', results);
+              
+              // Preparar datos para la página de confirmación
+              const form = document.getElementById('shipping-form');
+              const formData = new FormData(form);
+              const subtotal = window.VoidCart.total();
+              const total = subtotal + shippingCost;
+              
+              const confirmationData = {
+                orderId: orderDetails.id,
+                timestamp: new Date().toISOString(),
+                email: formData.get('email'),
+                items: items.map(item => ({
+                  name: item.title,
+                  quantity: item.qty || 1,
+                  price: item.price
+                })),
+                shipping: {
+                  firstName: formData.get('firstName'),
+                  lastName: formData.get('lastName'),
+                  address: formData.get('address'),
+                  city: formData.get('city'),
+                  postalCode: formData.get('postalCode'),
+                  country: formData.get('country')
+                },
+                subtotal: subtotal,
+                shippingCost: shippingCost,
+                total: total
+              };
+              
+              // Send confirmation email
+              sendOrderConfirmation(orderDetails);
+              
+              // Limpiar carrito
               window.VoidCart.clear();
-              renderSummary();
-            });
+              
+              // Redirigir a página de confirmación
+              const dataParam = encodeURIComponent(JSON.stringify(confirmationData));
+              window.location.href = `order-confirmation.html?data=${dataParam}`;
+              
+            } catch (error) {
+              console.error('Error processing order:', error);
+              alert('Order processed but there was an error. Please contact support with order ID: ' + data.orderID);
+            }
           },
           onError: function(err) {
             console.error('PayPal error:', err);

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - VOID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=BBH+Bogle&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'BBH Bogle', sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-family: 'BBH Bartle', sans-serif;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+    }
+    .section {
+      border: 1px solid #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: #0a0a0a;
+    }
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      font-family: 'BBH Bartle', sans-serif;
+    }
+    .product-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #333;
+      background: #111;
+    }
+    .product-status:last-child {
+      border-bottom: none;
+    }
+    .product-name {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .product-details {
+      font-size: 0.9rem;
+      color: #999;
+      margin-top: 5px;
+    }
+    .status {
+      font-weight: bold;
+      padding: 8px 16px;
+      border: 1px solid #fff;
+      font-size: 0.95rem;
+    }
+    .status.available {
+      background: #0f0;
+      color: #000;
+    }
+    .status.sold-out {
+      background: #f00;
+      color: #fff;
+    }
+    button {
+      border: 1px solid #fff;
+      background: #fff;
+      color: #000;
+      padding: 12px 24px;
+      cursor: pointer;
+      font-family: 'BBH Bogle', sans-serif;
+      font-size: 1rem;
+      transition: all 0.2s;
+      margin-top: 10px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #f0f0f0;
+      transform: translateY(-2px);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background: transparent;
+      color: #fff;
+    }
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .message {
+      padding: 10px 15px;
+      margin-top: 10px;
+      border: 1px solid;
+      font-size: 0.9rem;
+    }
+    .warning {
+      color: #ff6b6b;
+      border-color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+    }
+    .success {
+      color: #0f0;
+      border-color: #0f0;
+      background: rgba(0, 255, 0, 0.1);
+    }
+    .error {
+      color: #f00;
+      border-color: #f00;
+      background: rgba(255, 0, 0, 0.1);
+    }
+    a {
+      color: #fff;
+      text-decoration: underline;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+    }
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #f00;
+    }
+    .status-dot.online {
+      background: #0f0;
+    }
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quantity-control input {
+      width: 60px;
+      padding: 5px;
+      background: #000;
+      border: 1px solid #fff;
+      color: #fff;
+      text-align: center;
+      font-family: 'BBH Bogle', sans-serif;
+    }
+    .quantity-control button {
+      padding: 5px 12px;
+      margin: 0;
+    }
+  </style>
+  
+  <script src="js/api-client.js"></script>
+</head>
+<body>
+  <h1>VOID Admin Panel</h1>
+  
+  <div class="section">
+    <h2>Server Status</h2>
+    <div class="server-status">
+      <div class="status-dot" id="server-status-dot"></div>
+      <span id="server-status-text">Checking...</span>
+    </div>
+    <div id="server-info" style="color: #999; font-size: 0.9rem;"></div>
+  </div>
+  
+  <div class="section">
+    <h2>Inventory Status</h2>
+    <div id="inventory-status" class="loading">Loading inventory...</div>
+  </div>
+  
+  <div class="section">
+    <h2>Inventory Management</h2>
+    <p style="margin-bottom: 15px; color: #999;">Reset all products or update individual quantities.</p>
+    
+    <button onclick="resetInventory()">Reset All to 1 Unit</button>
+    <button class="secondary" onclick="loadInventory()">Refresh Data</button>
+    
+    <div id="management-message"></div>
+  </div>
+  
+  <a href="index.html">← Back to Shop</a>
+
+  <script>
+    let inventoryData = {};
+    let isServerOnline = false;
+
+    async function checkServerStatus() {
+      try {
+        const response = await fetch('http://localhost:3000/api/health');
+        const data = await response.json();
+        
+        isServerOnline = data.status === 'ok';
+        
+        document.getElementById('server-status-dot').classList.toggle('online', isServerOnline);
+        document.getElementById('server-status-text').textContent = isServerOnline 
+          ? 'Server Online' 
+          : 'Server Offline';
+        
+        if (isServerOnline) {
+          document.getElementById('server-info').innerHTML = `
+            Database: ${data.database}<br>
+            Last check: ${new Date(data.timestamp).toLocaleString()}
+          `;
+        }
+        
+        return isServerOnline;
+      } catch (error) {
+        isServerOnline = false;
+        document.getElementById('server-status-dot').classList.remove('online');
+        document.getElementById('server-status-text').textContent = 'Server Offline';
+        document.getElementById('server-info').innerHTML = `
+          <span style="color: #f00;">Cannot connect to server. Make sure to run: npm run dev</span>
+        `;
+        return false;
+      }
+    }
+
+    async function loadInventory() {
+      const container = document.getElementById('inventory-status');
+      
+      if (!await checkServerStatus()) {
+        container.innerHTML = '<div class="error message">Server is offline. Start server with: npm run dev</div>';
+        return;
+      }
+
+      try {
+        const inventory = await window.VoidAPI.getInventory();
+        
+        if (!inventory) {
+          container.innerHTML = '<div class="error message">Failed to load inventory</div>';
+          return;
+        }
+
+        inventoryData = inventory;
+        
+        let html = '';
+        for (const [productId, data] of Object.entries(inventory)) {
+          const status = data.quantity > 0 ? 'available' : 'sold-out';
+          const statusText = data.quantity > 0 ? `${data.quantity} available` : 'SOLD OUT';
+          
+          html += `
+            <div class="product-status">
+              <div>
+                <div class="product-name">${data.name}</div>
+                <div class="product-details">Price: €${data.price} | ID: ${productId}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <span class="status ${status}">${statusText}</span>
+                <div class="quantity-control">
+                  <button onclick="updateQuantity('${productId}', ${data.quantity - 1})" ${data.quantity <= 0 ? 'disabled' : ''}>−</button>
+                  <input type="number" id="qty-${productId}" value="${data.quantity}" min="0" max="10" />
+                  <button onclick="updateQuantity('${productId}', ${data.quantity + 1})">+</button>
+                  <button onclick="setQuantityFromInput('${productId}')">Set</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        
+        container.innerHTML = html || '<div class="warning message">No products found</div>';
+      } catch (error) {
+        console.error('Error loading inventory:', error);
+        container.innerHTML = '<div class="error message">Error loading inventory: ' + error.message + '</div>';
+      }
+    }
+
+    async function updateQuantity(productId, newQuantity) {
+      if (newQuantity < 0) newQuantity = 0;
+      
+      showMessage('Updating...', 'warning');
+      
+      try {
+        const result = await window.VoidAPI.updateProductQuantity(productId, newQuantity);
+        
+        if (result.success) {
+          showMessage(`✓ ${productId.toUpperCase()} updated to ${newQuantity} unit(s)`, 'success');
+          await loadInventory();
+        } else {
+          showMessage('✗ Failed to update: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showMessage('✗ Error: ' + error.message, 'error');
+      }
+    }
+
+    function setQuantityFromInput(productId) {
+      const input = document.getElementById(`qty-${productId}`);
+      const newQuantity = parseInt(input.value);
+      
+      if (isNaN(newQuantity) || newQuantity < 0) {
+        showMessage('✗ Invalid quantity', 'error');
+        return;
+      }
+      
+      updateQuantity(productId, newQuantity);
+    }
+
+    async function resetInventory() {
+      if (!confirm('¿Estás seguro de que quieres resetear el inventario?\n\nEsto pondrá TODOS los productos a 1 unidad disponible.')) {
+        return;
+      }
+
+      showMessage('Resetting inventory...', 'warning');
+
+      try {
+        const result = await window.VoidAPI.resetInventory();
+        
+        if (result.success) {
+          showMessage('✓ Inventory reset successfully!', 'success');
+          await loadInventory();
+        } else {
+          showMessage('✗ Failed to reset: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showMessage('✗ Error: ' + error.message, 'error');
+      }
+    }
+
+    function showMessage(text, type = 'success') {
+      const container = document.getElementById('management-message');
+      container.innerHTML = `<div class="message ${type}">${text}</div>`;
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          container.innerHTML = '';
+        }, 3000);
+      }
+    }
+
+    // Auto-refresh cada 5 segundos
+    setInterval(async () => {
+      if (isServerOnline) {
+        await loadInventory();
+      } else {
+        await checkServerStatus();
+      }
+    }, 5000);
+
+    // Cargar al inicio
+    checkServerStatus().then(online => {
+      if (online) {
+        loadInventory();
+      }
+    });
+  </script>
+</body>
+</html>

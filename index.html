@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=BBH+Bogle&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- API Client -->
+  <script src="js/api-client.js"></script>
 </head>
 <body>
 
@@ -331,16 +334,16 @@
           const productPrice = parseInt(btn.dataset.price);
           
           if (window.VoidCart) {
-            window.VoidCart.add({
+            const added = window.VoidCart.add({
               id: btn.dataset.product,
-              name: productName,
+              title: productName,
               price: productPrice,
-              quantity: 1
+              qty: 1
             });
             
-            // Si es "buy now", abrir el carrito
-            if (btn.classList.contains('primary')) {
-              window.VoidCart.open();
+            // Si es "buy now" y se agregó exitosamente, abrir el carrito
+            if (added && btn.classList.contains('primary')) {
+              window.VoidCart.toggleOverlay(true);
             }
           }
         });

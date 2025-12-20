@@ -392,10 +392,14 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 .actions { display: flex; gap: 12px; }
 .btn { border: 1px solid #fff; background: transparent; padding: 10px 14px; text-decoration: none; color: inherit; cursor: pointer; font-family: 'BBH Bogle', sans-serif; font-size: 1.1rem; transition: all 0.25s ease; }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled:hover { transform: none; box-shadow: none; }
 .btn.primary { background: #fff; color: #000; }
 .btn.primary:hover { background: #f0f0f0; }
+.btn.primary:disabled:hover { background: #fff; }
 .btn.ghost { background: transparent; }
 .btn.ghost:hover { background: rgba(255, 255, 255, 0.1); }
+.btn.ghost:disabled:hover { background: transparent; }
 
 /* CART OVERLAY */
 .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; place-items: center; z-index: 3; opacity: 0; transition: opacity 0.3s ease; }

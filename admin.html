@@ -168,7 +168,24 @@
   <script src="js/api-client.js"></script>
 </head>
 <body>
-  <h1>VOID Admin Panel</h1>
+  <!-- Login Screen -->
+  <div id="login-screen" style="display: none; position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="max-width: 400px; width: 90%; padding: 40px; border: 1px solid #fff; background: #0a0a0a;">
+      <h2 style="font-family: 'BBH Bartle', sans-serif; text-align: center; margin-bottom: 30px; font-size: 2rem;">ADMIN ACCESS</h2>
+      <p style="text-align: center; color: #999; margin-bottom: 20px;">Enter password to continue</p>
+      <input type="password" id="admin-password" placeholder="Password" style="width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; font-family: 'BBH Bogle', sans-serif; font-size: 1rem; margin-bottom: 15px;">
+      <button onclick="checkPassword()" style="width: 100%; padding: 12px; background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; font-family: 'BBH Bogle', sans-serif; font-size: 1rem; font-weight: bold;">ACCESS</button>
+      <p id="login-error" style="color: #f00; text-align: center; margin-top: 15px; display: none;">Incorrect password</p>
+      <p style="text-align: center; color: #666; margin-top: 20px; font-size: 0.85rem;">Hint: Check your server/.env file</p>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden until authenticated) -->
+  <div id="admin-content" style="display: none;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1 style="margin: 0;">VOID Admin Panel</h1>
+    <button onclick="logout()" class="secondary" style="padding: 8px 16px; margin: 0;">Logout</button>
+  </div>
   
   <div class="section">
     <h2>Server Status</h2>
@@ -195,8 +212,76 @@
   </div>
   
   <a href="index.html">← Back to Shop</a>
+  </div>
 
   <script>
+    // Configuración de seguridad
+    const ADMIN_PASSWORD_HASH = 'void2025'; // Cambia esto por tu contraseña
+    const SESSION_KEY = 'void_admin_auth';
+
+    // Verificar autenticación al cargar
+    function checkAuth() {
+      const isAuthenticated = sessionStorage.getItem(SESSION_KEY);
+      if (isAuthenticated === 'true') {
+        showAdminContent();
+      } else {
+        showLoginScreen();
+      }
+    }
+
+    function showLoginScreen() {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('admin-content').style.display = 'none';
+      // Focus en el input
+      setTimeout(() => {
+        document.getElementById('admin-password').focus();
+      }, 100);
+      
+      // Enter key para submit
+      document.getElementById('admin-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          checkPassword();
+        }
+      });
+    }
+
+    function showAdminContent() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-content').style.display = 'block';
+      initAdmin();
+    }
+
+    function checkPassword() {
+      const input = document.getElementById('admin-password').value;
+      const errorMsg = document.getElementById('login-error');
+      
+      if (input === ADMIN_PASSWORD_HASH) {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+        errorMsg.style.display = 'none';
+        showAdminContent();
+      } else {
+        errorMsg.style.display = 'block';
+        document.getElementById('admin-password').value = '';
+        document.getElementById('admin-password').focus();
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem(SESSION_KEY);
+      location.reload();
+    }
+
+    // Inicializar verificación al cargar la página
+    checkAuth();
+
+    // Funciones del admin (se ejecutan solo si está autenticado)
+    function initAdmin() {
+    // Detectar si estamos en localhost o producción
+    const API_BASE_URL = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3000' 
+      : 'https://void-backend-ub5t.onrender.com';
+
+    // Verificar estado del servidor
     let inventoryData = {};
     let isServerOnline = false;
 
@@ -365,6 +450,7 @@
         loadInventory();
       }
     });
+    } // Cierre de función initAdmin()
   </script>
 </body>
 </html>

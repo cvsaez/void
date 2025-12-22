@@ -61,7 +61,7 @@ header, section, footer {
 }
 
 header {
-  min-height: auto;
+  min-height: 100vh;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -581,6 +581,11 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 /* Móviles (portrait) */
 @media (max-width: 480px) {
   /* Header */
+  header {
+    min-height: 100vh;
+    padding: 0;
+  }
+  
   h1 {
     font-size: clamp(2.5rem, 12vw, 4rem);
     text-align: center;

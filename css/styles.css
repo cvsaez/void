@@ -390,8 +390,9 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 .product-info .size-info { color: #aaa; font-family: 'BBH Bogle', sans-serif; font-size: 0.95rem; margin-bottom: 16px; letter-spacing: 0.5px; }
 .product-info .desc { margin-bottom: 20px; max-width: 45ch; font-family: 'BBH Bogle', sans-serif; font-size: 1.15rem; }
 .actions { display: flex; gap: 12px; }
-.btn { border: 1px solid #fff; background: transparent; padding: 10px 14px; text-decoration: none; color: inherit; cursor: pointer; font-family: 'BBH Bogle', sans-serif; font-size: 1.1rem; transition: all 0.25s ease; }
+.btn { border: 1px solid #fff; background: transparent; padding: 10px 14px; text-decoration: none; color: inherit; cursor: pointer; font-family: 'BBH Bogle', sans-serif; font-size: 1.1rem; transition: all 0.25s ease; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2); }
+.btn:active { transform: translateY(0); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn:disabled:hover { transform: none; box-shadow: none; }
 .btn.primary { background: #fff; color: #000; }
@@ -409,6 +410,7 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
 .cart-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #fff; }
 .cart-items { padding: 12px 14px; max-height: 40vh; overflow: auto; }
 .cart-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-top: 1px solid #fff; }
+.cart-actions { display: flex; gap: 8px; }
 .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dotted #ddd; }
 .ci-main { flex: 1; }
 .ci-title { font-size: 1rem; margin-bottom: 4px; }
@@ -744,6 +746,15 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
     align-items: stretch;
   }
   
+  .cart-actions {
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .cart-actions .btn {
+    flex: 1;
+  }
+  
   .cart-item {
     flex-direction: column;
     align-items: flex-start;
@@ -885,6 +896,19 @@ nav #cart-button:hover { background: rgba(255, 255, 255, 0.1); }
   
   .checkout h1 {
     font-size: 1.6rem;
+  }
+}
+
+/* Prevenir efectos hover en dispositivos táctiles */
+@media (hover: none) {
+  .btn:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
   }
 }
 

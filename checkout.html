@@ -410,12 +410,42 @@
           }
         };
         
-        // Send email using EmailJS
+        // Send confirmation email to customer
         emailjs.send('service_n3gyhjn', 'template_qhcv1xn', orderDetails)
           .then(function(response) {
-            console.log('Email sent successfully:', response);
+            console.log('Customer email sent successfully:', response);
           }, function(error) {
-            console.error('Email error:', error);
+            console.error('Customer email error:', error);
+          });
+        
+        // Send notification email to admin/seller with full order details
+        const shippingMethodName = document.getElementById('shippingMethod').options[document.getElementById('shippingMethod').selectedIndex].text;
+        const countryName = document.getElementById('country').options[document.getElementById('country').selectedIndex].text;
+        
+        const adminOrderDetails = {
+          order_id: paypalDetails.id,
+          order_date: new Date().toLocaleString('es-ES'),
+          customer_email: formData.get('email'),
+          customer_name: `${formData.get('firstName')} ${formData.get('lastName')}`,
+          shipping_address: formData.get('address'),
+          shipping_city: formData.get('city'),
+          shipping_postal: formData.get('postalCode'),
+          shipping_country: countryName,
+          shipping_method: shippingMethodName,
+          orders: orders, // Include product details for template
+          subtotal: subtotal.toFixed(2),
+          shipping_cost: shippingCost.toFixed(2),
+          total: total.toFixed(2)
+        };
+        
+        // Send email to admin (you'll need to create a new template in EmailJS or use a different service ID)
+        // For now using the same service but you should create a template like 'template_admin_order'
+        emailjs.send('service_n3gyhjn', 'template_admin_order', adminOrderDetails)
+          .then(function(response) {
+            console.log('Admin notification email sent successfully:', response);
+          }, function(error) {
+            console.error('Admin notification email error:', error);
+            // Even if admin email fails, don't interrupt the checkout flow
           });
       }
       
